@@ -4,7 +4,7 @@ import { FaEarthAsia } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
 import './styles.css';
 import { HelperContext } from '../../context/HelperContext';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 
 const LoginForm = () => {
     const [step, setStep] = useState('credentials');
@@ -13,7 +13,9 @@ const LoginForm = () => {
         username: '',
         password: '',
         fingerprint: '',
+        twoFactorCode: ''
     });
+    const [sessionId, setSessionId] = useState('');
     const helper = useContext(HelperContext);
 
     const handleSubmit = async (e) => {
@@ -21,24 +23,50 @@ const LoginForm = () => {
         if (step === 'credentials') {
             // Simulate API call to validate credentials
             setIsLoading(true);
-            helper.login({
-                userId: formData.username,
-                password: formData.password,
-                fingerprint: uuidv4().replace(/-/g, '')
-            }).then(() => {
-                setIsLoading(false);
-                setStep('2fa');
-            }).catch((error) => {
-                setIsLoading(false);
-                alert(error.message);
-            });
+            await fetch('/api/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: formData.username,
+                    password: formData.password,
+                    twoFactorMethod: 'mobile'
+                })
+            })
+                .then(res => res.json())
+                .then(async (data) => {
+                    if (data.requiresCode) {
+                        setStep('2fa');
+                        setSessionId(data.sessionId);
+                    } else {
+                        // Redirect to dashboard or show content
+                        // document.body.style.overflow = 'auto';
+                        console.log(data);
+                    }
+                })
+                .catch(err => console.error(err));
         } else if (step === '2fa') {
             setIsLoading(true);
             // Simulate API call for 2FA verification
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await fetch('/api/verify-2fa/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sessionId: sessionId,
+                    code: formData.twoFactorCode
+                })
+            })
+                .then(res => res.json())
+                .then(async (data) => {
+                    // Redirect to dashboard or show content
+                    // document.body.style.overflow = 'auto';
+                    console.log(data);
+                })
+                .catch(err => console.error(err));
             setIsLoading(false);
-            // Redirect to dashboard or show content
-            document.body.style.overflow = 'auto';
         }
     };
 
