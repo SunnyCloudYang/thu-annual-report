@@ -1,10 +1,8 @@
-import React, { useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MdOutlineLogin } from "react-icons/md";
 import { FaEarthAsia } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
 import './styles.css';
-import { HelperContext } from '../../context/HelperContext';
-// import { v4 as uuidv4 } from 'uuid';
 
 const LoginForm = () => {
     const [step, setStep] = useState('credentials');
@@ -16,7 +14,13 @@ const LoginForm = () => {
         twoFactorCode: ''
     });
     const [sessionId, setSessionId] = useState('');
-    const helper = useContext(HelperContext);
+
+    useEffect(() => {
+        fetch('/api/')
+            .then(res => res.json())
+            .then(data => console.log(data))
+            .catch(err => console.error(err));
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -45,7 +49,10 @@ const LoginForm = () => {
                         console.log(data);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => {
+                    console.error(err);
+                });
+            setIsLoading(false);
         } else if (step === '2fa') {
             setIsLoading(true);
             // Simulate API call for 2FA verification
