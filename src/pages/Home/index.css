@@ -1,0 +1,80 @@
+.home-background {
+  background: url('https://id.tsinghua.edu.cn/ui/activation/images/bg2.jpg') no-repeat center top;
+  height: 100vh;
+}
+
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.privacy-modal {
+  background: #F3DCD4;
+  border-radius: 20px;
+  padding: 2rem;
+  margin: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 90%;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.privacy-content {
+  text-align: center;
+}
+
+.privacy-content h1 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+.privacy-text {
+  text-align: left;
+  margin: 2rem 0;
+  color: #34495e;
+  line-height: 1.6;
+}
+
+.privacy-buttons {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.accept-btn {
+  background: #337ab7;
+  color: white;
+}
+
+.exit-btn {
+  background: #e13f34;
+  color: white;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
