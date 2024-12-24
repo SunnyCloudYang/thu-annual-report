@@ -117,7 +117,7 @@ app.post('/api/verify-2fa/', async (req, res) => {
     }
 });
 
-app.get('/api/getBookingRecordsStats/', async (req, res) => {
+app.get('/api/getBookingRecords/', async (req, res) => {
     try {
         const bookingRecord = await helper.getBookingRecords();
         res.status(200).json({
@@ -132,7 +132,7 @@ app.get('/api/getBookingRecordsStats/', async (req, res) => {
     }
 });
 
-app.get('/api/getBankPaymentStats/', async (req, res) => {
+app.get('/api/getBankPayment/', async (req, res) => {
     try {
         const bankPayment = await helper.getBankPayment();
         res.status(200).json({
@@ -143,6 +143,36 @@ app.get('/api/getBankPaymentStats/', async (req, res) => {
         res.status(401).json({
             success: false,
             message: error.message || 'Failed to get bank payment'
+        });
+    }
+});
+
+app.get('/api/getSportsRecords/', async (req, res) => {
+    try {
+        const sportsRecord = await helper.getSportsReservationRecords();
+        res.status(200).json({
+            success: true,
+            sportsRecord
+        });
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            message: error.message || 'Failed to get sports record'
+        });
+    }
+});
+
+app.get('/api/getCardTransactions/', async (req, res) => {
+    try {
+        const cardTransactions = await helper.getCampusCardTransactions('2024-01-01', '2024-12-31', 1);
+        res.status(200).json({
+            success: true,
+            cardTransactions
+        });
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            message: error.message || 'Failed to get card transactions'
         });
     }
 });
