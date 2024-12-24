@@ -8,7 +8,7 @@ const app = express();
 
 const helper = new InfoHelper();
 
-// API routes should come first
+// API routes come first
 app.use('/api', express.json());  // Apply JSON parsing only to API routes
 
 // Store 2FA resolvers for each session
@@ -117,7 +117,7 @@ app.post('/api/verify-2fa/', async (req, res) => {
     }
 });
 
-app.get('/api/booking-records/', async (req, res) => {
+app.get('/api/getBookingRecordsStats/', async (req, res) => {
     try {
         const bookingRecord = await helper.getBookingRecords();
         res.status(200).json({
@@ -132,6 +132,21 @@ app.get('/api/booking-records/', async (req, res) => {
     }
 });
 
+app.get('/api/getBankPaymentStats/', async (req, res) => {
+    try {
+        const bankPayment = await helper.getBankPayment();
+        res.status(200).json({
+            success: true,
+            bankPayment
+        });
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            message: error.message || 'Failed to get bank payment'
+        });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -141,10 +156,8 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Static files should be served last
 app.use(express.static(path.join(__dirname, '..', 'build')));
 
-// This should be the last route
 app.get('*', function (req, res) {
     res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
 });
