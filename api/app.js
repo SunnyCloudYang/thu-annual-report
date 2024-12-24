@@ -1,9 +1,16 @@
 const express = require('express');
+const path = require('path');
 const { InfoHelper } = require('@thu-info/lib');
 const { v4: uuidv4 } = require('uuid');
 const app = express();
 
-app.use(express.json());
+// app.use(express.json());
+
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 // Store 2FA resolvers for each session
 const twoFactorResolvers = new Map();
@@ -108,7 +115,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
