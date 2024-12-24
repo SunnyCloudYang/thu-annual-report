@@ -2,7 +2,7 @@ import React from 'react';
 import SlideContainer from '../../components/SlideContainer';
 import StatPage from '../../components/StatPage';
 import LoadingBar from '../../components/LoadingBar';
-import './styles.css';
+// import './styles.css';
 
 const Stats = ({ data, isLoading }) => {
     if (isLoading) {
