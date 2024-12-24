@@ -196,37 +196,30 @@ const Home = () => {
 
     const fetchStats = async () => {
         try {
-            const [bookingResponse, bankResponse, sportsResponse, cardResponse] = await Promise.all([
-                fetch('/api/getBookingRecords/'),
-                fetch('/api/getBankPayment/'),
-                fetch('/api/getSportsRecords/'),
-                fetch('/api/getCardTransactions/')
+            const sportsResponse = fetch('/api/getSportsRecords/');
+            const bookingResponse = fetch('/api/getBookingRecord/');
+            const cardResponse = fetch('/api/getCardTransactions/');
+            const bankResponse = fetch('/api/getBankPayment/');
+
+            const responses = await Promise.all([
+                bookingResponse.json(),
+                bankResponse.json(),
+                sportsResponse.json(),
+                cardResponse.json()
             ]);
 
-            // Check if any request failed
-            if (!bookingResponse.ok || !bankResponse.ok || !sportsResponse.ok || !cardResponse.ok) {
-                throw new Error('One or more requests failed');
-            }
-
-            const bookingData = await bookingResponse.json();
-            const bankData = await bankResponse.json();
-            const sportsData = await sportsResponse.json();
-            const cardData = await cardResponse.json();
-
-            // Process data only if success is true
-            if (bookingData.success && bankData.success && sportsData.success && cardData.success) {
+            if (responses.every(res => res.success)) {
                 setStatsData({
-                    booking: processBookingData(bookingData),
-                    bank: processBankData(bankData),
-                    sports: processSportsData(sportsData),
-                    card: processCardData(cardData)
+                    booking: processBookingData(responses[0]),
+                    bank: processBankData(responses[1]),
+                    sports: processSportsData(responses[2]),
+                    card: processCardData(responses[3])
                 });
             } else {
                 throw new Error('One or more responses indicated failure');
             }
         } catch (error) {
             console.error('Error fetching stats:', error);
-            // Optionally show an error message to the user
         }
     };
 

@@ -26,7 +26,8 @@ app.post('/api/login/', async (req, res) => {
     try {
         const { userId, password, twoFactorMethod } = req.body;
         const sessionId = uuidv4();
-        helper.fingerprint = sessionId.replace(/-/g, '');
+        helper.fingerprint = userId;
+        let twoFactorRequired = false;
 
         helper.twoFactorMethodHook = async (hasWeChatBool, phone, hasTotp) => {
             if (twoFactorMethod === 'mobile' && phone) {
@@ -36,50 +37,35 @@ app.post('/api/login/', async (req, res) => {
             } else if (twoFactorMethod === 'totp' && hasTotp) {
                 return 'totp';
             } else {
-                return phone ? 'mobile' : hasWeChatBool ? 'wechat' :  'totp';
+                return phone ? 'mobile' : hasWeChatBool ? 'wechat' : 'totp';
             }
         };
 
         helper.twoFactorAuthHook = async () => {
-            // Return early with 2FA required status
+            twoFactorRequired = true;
+            return new Promise((resolve) => {
+                twoFactorResolvers.set(sessionId, { resolve, helper });
+            });
+        };
+
+        helper.trustFingerprintHook = async () => true;
+
+        await helper.login({ userId, password });
+
+        if (twoFactorRequired) {
             res.status(202).json({
                 success: true,
                 message: 'Two-factor authentication required',
                 requiresCode: true,
                 sessionId: sessionId
             });
-            
-            return new Promise((resolve) => {
-                twoFactorResolvers.set(sessionId, { resolve, helper });
-            });
-        };
-
-        helper.trustFingerprintHook = async () => {
-            return true;
-        };
-
-        try {
-            await helper.login({
-                userId,
-                password,
-            });
-            
-            // Only reach here if 2FA was not required
+        } else {
             res.status(200).json({ 
                 success: true,
                 message: 'Login successful'
             });
-        } catch (error) {
-            // Only send error response if we haven't already sent 2FA response
-            if (!res.headersSent) {
-                res.status(401).json({
-                    success: false,
-                    message: error.message || 'Login failed'
-                });
-            }
         }
     } catch (error) {
-        // Only send error response if we haven't already sent 2FA response
         if (!res.headersSent) {
             res.status(401).json({
                 success: false,
@@ -101,7 +87,7 @@ app.post('/api/verify-2fa/', async (req, res) => {
             });
         }
 
-        const { resolve, helper } = session;
+        const { resolve } = session;
         resolve(code);
         twoFactorResolvers.delete(sessionId);
 
@@ -110,10 +96,12 @@ app.post('/api/verify-2fa/', async (req, res) => {
             message: 'Two-factor authentication successful'
         });
     } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: error.message || '2FA verification failed'
-        });
+        if (!res.headersSent) {
+            res.status(401).json({
+                success: false,
+                message: error.message || '2FA verification failed'
+            });
+        }
     }
 });
 
