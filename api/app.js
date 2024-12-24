@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const { InfoHelper } = require('@thu-info/lib');
 const { v4: uuidv4 } = require('uuid');
+const https = require('https');
+const fs = require('fs');
 const app = express();
 
 const helper = new InfoHelper();
@@ -147,9 +149,15 @@ app.get('*', function (req, res) {
     res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// Create HTTPS server
+const httpsOptions = {
+    key: fs.readFileSync('/home/ubuntu/ssl/annual.thu-life.online.key'),
+    cert: fs.readFileSync('/home/ubuntu/ssl/annual.thu-life.online.pem')
+};
+
+const PORT = process.env.PORT || 443;
+https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
 });
 
 module.exports = app;
