@@ -149,7 +149,39 @@ app.get('/api/getBankPayment/', async (req, res) => {
 
 app.get('/api/getSportsRecords/', async (req, res) => {
     try {
-        const sportsRecord = await helper.getSportsReservationRecords();
+        // const sportsRecord = await helper.getSportsReservationRecords();
+        const sportsRecord = [
+            {
+                name: "西体育馆",
+                field: "西体台球 (台7)",
+                time: "2021-10-06  20:00-21:00",
+                price: "15.0",
+                method: "网上支付",
+                bookTimestamp: 1667269469000,
+                bookId: undefined,
+                payId: undefined,
+            },
+            {
+                name: "西体育馆",
+                field: "西体羽毛球场 (羽4)",
+                time: "2021-10-07  7:00-8:00",
+                price: "40.0",
+                method: "",
+                bookTimestamp: undefined,
+                bookId: undefined,
+                payId: undefined,
+            },
+            {
+                name: "西体育馆",
+                field: "西体羽毛球场 (羽8)",
+                time: "2021-10-08  7:00-8:00",
+                price: "40.0",
+                method: "",
+                bookTimestamp: undefined,
+                bookId: undefined,
+                payId: undefined,
+            }
+        ];
         res.status(200).json({
             success: true,
             sportsRecord

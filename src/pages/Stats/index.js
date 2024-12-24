@@ -60,6 +60,34 @@ const Stats = ({ data, isLoading }) => {
                 direction="up"
                 chartType="doughnut"
             />
+            <StatPage 
+                title="食堂消费分布"
+                data={data.card.locationData}
+                background="linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%)"
+                direction="right"
+                chartType="pie"
+            />
+            <StatPage 
+                title="用餐时段分析"
+                data={data.card.mealTypeData}
+                background="linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)"
+                direction="up"
+                chartType="doughnut"
+            />
+            <StatPage 
+                title="月度消费趋势"
+                data={data.card.monthlyData}
+                background="linear-gradient(135deg, #FA709A 0%, #FEE140 100%)"
+                direction="left"
+                chartType="bar"
+            />
+            <StatPage 
+                title="洗浴数据"
+                data={data.card.showerData}
+                background="linear-gradient(135deg, #0BA360 0%, #3CBA92 100%)"
+                direction="up"
+                chartType="bar"
+            />
         </SlideContainer>
     );
 };

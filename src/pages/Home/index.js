@@ -29,7 +29,7 @@ const Home = () => {
     const fetchStats = async () => {
         setIsLoading(true);
         try {
-            const [bookingResponse, bankResponse, sportsResponse] = await Promise.all([
+            const [bookingResponse, bankResponse, sportsResponse, cardResponse] = await Promise.all([
                 fetch('/api/getBookingRecords/'),
                 fetch('/api/getBankPayment/'),
                 fetch('/api/getSportsRecords/'),
@@ -39,13 +39,14 @@ const Home = () => {
             const bookingData = await bookingResponse.json();
             const bankData = await bankResponse.json();
             const sportsData = await sportsResponse.json();
+            const cardData = await cardResponse.json();
             
             const processBookingData = (data) => {
                 const bookingStats = data.bookingRecord || [];
                 
                 // Filter only used records and sort by date
                 const usedRecords = bookingStats
-                    .filter(record => record.status === "已使用")
+                    // .filter(record => record.status === "已使用")
                     .sort((a, b) => new Date(a.time) - new Date(b.time));
 
                 // Group by location
@@ -187,10 +188,93 @@ const Home = () => {
                 };
             };
 
+            const processCardData = (data) => {
+                const transactions = data.cardTransactions || [];
+
+                // Separate eating and shower transactions
+                const eatingTransactions = transactions.filter(tx => 
+                    tx.summary === "持卡人消费" && !tx.name.includes('淋浴')
+                );
+                const showerTransactions = transactions.filter(tx => 
+                    tx.name.includes('淋浴')
+                );
+
+                // Group eating by location
+                const locationStats = eatingTransactions.reduce((acc, tx) => {
+                    acc[tx.address] = (acc[tx.address] || 0) + tx.amount;
+                    return acc;
+                }, {});
+
+                // Group by meal type
+                const mealTypeStats = eatingTransactions.reduce((acc, tx) => {
+                    const hour = new Date(tx.timestamp).getHours();
+                    if (hour >= 5 && hour < 10) acc['早餐'] = (acc['早餐'] || 0) + tx.amount;
+                    else if (hour >= 10 && hour < 15) acc['午餐'] = (acc['午餐'] || 0) + tx.amount;
+                    else if (hour >= 15 && hour < 20) acc['晚餐'] = (acc['晚餐'] || 0) + tx.amount;
+                    else acc['夜宵'] = (acc['夜宵'] || 0) + tx.amount;
+                    return acc;
+                }, {});
+
+                // Calculate shower statistics
+                const showerStats = {
+                    count: showerTransactions.length,
+                    totalAmount: showerTransactions.reduce((acc, tx) => acc + tx.amount, 0),
+                    avgDuration: (showerTransactions.reduce((acc, tx) => acc + tx.amount, 0) / 2.31 * 10).toFixed(1) // Assuming 2.31 yuan per 10 minutes
+                };
+
+                // Group transactions by month
+                const monthlyStats = transactions.reduce((acc, tx) => {
+                    const month = new Date(tx.timestamp).toLocaleString('zh-CN', { month: 'long' });
+                    acc[month] = (acc[month] || 0) + tx.amount;
+                    return acc;
+                }, {});
+
+                return {
+                    // Pie chart for eating locations
+                    locationData: {
+                        labels: Object.keys(locationStats),
+                        values: Object.values(locationStats),
+                        summary: `今年你最常去的食堂是${
+                            Object.entries(locationStats)
+                                .sort(([,a], [,b]) => b - a)[0][0]
+                        }，共消费 ${
+                            Object.values(locationStats).reduce((a, b) => a + b, 0).toFixed(2)
+                        } 元`
+                    },
+                    // Doughnut chart for meal types
+                    mealTypeData: {
+                        labels: Object.keys(mealTypeStats),
+                        values: Object.values(mealTypeStats),
+                        summary: `其中花费最多的是${
+                            Object.entries(mealTypeStats)
+                                .sort(([,a], [,b]) => b - a)[0][0]
+                        }，平均每餐 ${
+                            (Object.values(mealTypeStats).reduce((a, b) => a + b, 0) / eatingTransactions.length).toFixed(2)
+                        } 元`
+                    },
+                    // Bar chart for monthly spending
+                    monthlyData: {
+                        labels: Object.keys(monthlyStats),
+                        values: Object.values(monthlyStats),
+                        label: '月度消费（元）',
+                        summary: `全年共消费 ${
+                            Object.values(monthlyStats).reduce((a, b) => a + b, 0).toFixed(2)
+                        } 元`
+                    },
+                    // Special summary for shower statistics
+                    showerData: {
+                        labels: ['淋浴次数', '平均时长(分钟)'],
+                        values: [showerStats.count, parseFloat(showerStats.avgDuration)],
+                        summary: `今年你一共洗了 ${showerStats.count} 次澡，平均每次 ${showerStats.avgDuration} 分钟，共花费 ${showerStats.totalAmount.toFixed(2)} 元`
+                    }
+                };
+            };
+
             setStatsData({
                 booking: processBookingData(bookingData),
                 bank: processBankData(bankData),
-                sports: processSportsData(sportsData)
+                sports: processSportsData(sportsData),
+                card: processCardData(cardData)
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
