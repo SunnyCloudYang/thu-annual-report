@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MdOutlineLogin } from "react-icons/md";
-import { FaEarthAsia } from "react-icons/fa6";
+import { FaEarthAsia, FaArrowUp } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
 import './styles.css';
 
@@ -70,10 +70,16 @@ const LoginForm = () => {
                 .then(async (data) => {
                     // Redirect to dashboard or show content
                     // document.body.style.overflow = 'auto';
-                    console.log(data);
+                    if (data.success) {
+                        setStep('ready');
+                    }
                 })
                 .catch(err => console.error(err));
             setIsLoading(false);
+        } else {
+            // Redirect to dashboard or show content
+            // document.body.style.overflow = 'auto';
+            console.log('Ready to go');
         }
     };
 
@@ -128,7 +134,7 @@ const LoginForm = () => {
                             <p className="forgot-it">忘记烦恼</p>
                         </div>
                     </>
-                ) : (
+                ) : step === '2fa' ? (
                     <>
                         <h2>Two-Factor Authentication</h2>
                         <div className="form-group">
@@ -143,10 +149,21 @@ const LoginForm = () => {
                             />
                         </div>
                     </>
+                ) : (
+                    <div className="ready-container">
+                        <h2>让我们一起出发吧!</h2>
+                        <div className="slide-hint">
+                            <div className="slide-arrow">
+                                <FaArrowUp />
+                            </div>
+                            <p>上滑开启旅程</p>
+                        </div>
+                    </div>
                 )}
-                <button type="submit" className="submit-btn">
+                {step !== 'ready' && <button type="submit" className="submit-btn">
                     {step === 'credentials' ? '登录' : '验证'}
                 </button>
+                }
             </form>
             <span className='phone-number'><GiRotaryPhone /> 010-20255202</span>
         </div>
