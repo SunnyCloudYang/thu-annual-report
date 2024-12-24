@@ -4,9 +4,9 @@ const { InfoHelper } = require('@thu-info/lib');
 const { v4: uuidv4 } = require('uuid');
 const app = express();
 
-// app.use(express.json());
+app.use(express.json());
 
-app.use(express.static(path.join(__dirname, '..', 'build')));
+// app.use(express.static(path.join(__dirname, '..', 'build')));
 
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
