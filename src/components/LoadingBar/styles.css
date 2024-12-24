@@ -1,0 +1,20 @@
+.loading-bar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    text-align: center;
+}
+
+.loading-bar {
+    height: 3px;
+    background: linear-gradient(90deg, #337ab7, #23d5ab);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.loading-bar-container p {
+    color: #337ab7;
+    margin: 10px 0;
+    font-size: 14px;
+} 
