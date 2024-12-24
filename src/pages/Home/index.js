@@ -70,7 +70,10 @@ const Home = () => {
         return (
             <div className='home-background'>
                 <div className='home-container'>
-                    <LoginForm onLoginSuccess={() => setIsLoggedIn(true)} />
+                    <LoginForm onLoginSuccess={() => {
+                        setIsLoggedIn(true);
+                        setShowLogin(false);
+                        }} />
                 </div>
             </div>
         );

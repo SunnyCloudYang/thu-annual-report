@@ -4,7 +4,8 @@ import { FaEarthAsia, FaArrowUp } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
 import './styles.css';
 
-const LoginForm = () => {
+const LoginForm = (props) => {
+    const { onLoginSuccess } = props;
     const [step, setStep] = useState('credentials');
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -80,6 +81,7 @@ const LoginForm = () => {
             // Redirect to dashboard or show content
             // document.body.style.overflow = 'auto';
             console.log('Ready to go');
+            onLoginSuccess();
         }
     };
 
@@ -153,7 +155,7 @@ const LoginForm = () => {
                     <div className="ready-container">
                         <h2>让我们一起出发吧!</h2>
                         <div className="slide-hint">
-                            <div className="slide-arrow">
+                            <div className="slide-arrow" onClick={onLoginSuccess}>
                                 <FaArrowUp />
                             </div>
                             <p>上滑开启旅程</p>
