@@ -4,6 +4,8 @@ const { InfoHelper } = require('@thu-info/lib');
 const { v4: uuidv4 } = require('uuid');
 const app = express();
 
+const helper = new InfoHelper();
+
 // API routes should come first
 app.use('/api', express.json());  // Apply JSON parsing only to API routes
 
@@ -21,7 +23,6 @@ app.get('/api/', (req, res) => {
 app.post('/api/login/', async (req, res) => {
     try {
         const { userId, password, twoFactorMethod } = req.body;
-        const helper = new InfoHelper();
         const sessionId = uuidv4();
         helper.fingerprint = sessionId.replace(/-/g, '');
 
@@ -38,6 +39,7 @@ app.post('/api/login/', async (req, res) => {
         };
 
         helper.twoFactorAuthHook = async () => {
+            // Return early with 2FA required status
             res.status(202).json({
                 success: true,
                 message: 'Two-factor authentication required',
@@ -51,25 +53,37 @@ app.post('/api/login/', async (req, res) => {
         };
 
         helper.trustFingerprintHook = async () => {
-            return false;
+            return true;
         };
 
-        await helper.login({
-            userId,
-            password,
-        });
-        const bookingRecord = await helper.getBookingRecords();
-
-        res.status(200).json({ 
-            success: true,
-            message: 'Login successful',
-            bookingRecord: bookingRecord
-        });
+        try {
+            await helper.login({
+                userId,
+                password,
+            });
+            
+            // Only reach here if 2FA was not required
+            res.status(200).json({ 
+                success: true,
+                message: 'Login successful'
+            });
+        } catch (error) {
+            // Only send error response if we haven't already sent 2FA response
+            if (!res.headersSent) {
+                res.status(401).json({
+                    success: false,
+                    message: error.message || 'Login failed'
+                });
+            }
+        }
     } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: error.message || 'Login failed'
-        });
+        // Only send error response if we haven't already sent 2FA response
+        if (!res.headersSent) {
+            res.status(401).json({
+                success: false,
+                message: error.message || 'Login failed'
+            });
+        }
     }
 });
 
@@ -101,6 +115,21 @@ app.post('/api/verify-2fa/', async (req, res) => {
     }
 });
 
+app.get('/api/booking-records/', async (req, res) => {
+    try {
+        const bookingRecord = await helper.getBookingRecords();
+        res.status(200).json({
+            success: true,
+            bookingRecord
+        });
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            message: error.message || 'Failed to get booking record'
+        });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -124,4 +153,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
