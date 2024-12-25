@@ -200,14 +200,14 @@ const Home = () => {
             const headers = { 'session-id': sessionId };
 
             const [bookingResponse, bankResponse, sportsResponse, cardResponse] = await Promise.all([
-                fetch('/api/getBookingRecords/', { headers }),
+                // fetch('/api/getBookingRecords/', { headers }),
                 fetch('/api/getBankPayment/', { headers }),
                 fetch('/api/getSportsRecords/', { headers }),
                 fetch('/api/getCardTransactions/', { headers })
             ]);
 
             const responses = await Promise.all([
-                bookingResponse.json(),
+                // bookingResponse.json(),
                 bankResponse.json(),
                 sportsResponse.json(),
                 cardResponse.json()
@@ -215,7 +215,7 @@ const Home = () => {
 
             if (responses.every(res => res.success)) {
                 setStatsData({
-                    booking: processBookingData(responses[0]),
+                    // booking: processBookingData(responses[0]),
                     bank: processBankData(responses[1]),
                     sports: processSportsData(responses[2]),
                     card: processCardData(responses[3])
