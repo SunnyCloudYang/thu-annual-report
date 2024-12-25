@@ -199,7 +199,7 @@ const Home = () => {
             const sessionId = localStorage.getItem('sessionId');
             const headers = { 'session-id': sessionId };
 
-            const [bookingResponse, bankResponse, sportsResponse, cardResponse] = await Promise.all([
+            const [bankResponse, sportsResponse, cardResponse] = await Promise.all([
                 // fetch('/api/getBookingRecords/', { headers }),
                 fetch('/api/getBankPayment/', { headers }),
                 fetch('/api/getSportsRecords/', { headers }),
