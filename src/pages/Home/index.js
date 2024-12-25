@@ -199,26 +199,23 @@ const Home = () => {
             const sessionId = localStorage.getItem('sessionId');
             const headers = { 'session-id': sessionId };
 
-            const [bankResponse, sportsResponse, cardResponse] = await Promise.all([
-                // fetch('/api/getBookingRecords/', { headers }),
+            const [bankResponse, cardResponse] = await Promise.all([
                 fetch('/api/getBankPayment/', { headers }),
-                fetch('/api/getSportsRecords/', { headers }),
                 fetch('/api/getCardTransactions/', { headers })
             ]);
 
             const responses = await Promise.all([
                 // bookingResponse.json(),
                 bankResponse.json(),
-                sportsResponse.json(),
                 cardResponse.json()
             ]);
 
             if (responses.every(res => res.success)) {
                 setStatsData({
                     // booking: processBookingData(responses[0]),
-                    bank: processBankData(responses[1]),
-                    sports: processSportsData(responses[2]),
-                    card: processCardData(responses[3])
+                    bank: processBankData(responses[0]),
+                    // sports: processSportsData(responses[2]),
+                    card: processCardData(responses[1])
                 });
             } else if (responses.some(res => res.message === 'Session not found')) {
                 setShowLogin(true);
