@@ -6,14 +6,12 @@ const https = require('https');
 const fs = require('fs');
 const app = express();
 
-const helper = new InfoHelper();
-
 // API routes come first
 app.use('/api', express.json());  // Apply JSON parsing only to API routes
 
 // Store 2FA resolvers for each session
 const twoFactorResolvers = new Map();
-console.log("twoFactorResolvers", twoFactorResolvers);
+const helpers = new Map();
 
 app.get('/api/', (req, res) => {
     res.status(200).json({
@@ -26,10 +24,13 @@ app.post('/api/login/', async (req, res) => {
     try {
         const { userId, password, twoFactorMethod } = req.body;
         const sessionId = uuidv4();
-        helper.fingerprint = userId;
+        const helper = new InfoHelper();
+        helper.fingerprint = sessionId.replace(/-/g, '');
+        helpers.set(sessionId, helper);
         let twoFactorRequired = false;
 
         helper.twoFactorMethodHook = async (hasWeChatBool, phone, hasTotp) => {
+            twoFactorRequired = true;
             if (twoFactorMethod === 'mobile' && phone) {
                 return 'mobile';
             } else if (twoFactorMethod === 'wechat' && hasWeChatBool) {
@@ -42,7 +43,12 @@ app.post('/api/login/', async (req, res) => {
         };
 
         helper.twoFactorAuthHook = async () => {
-            twoFactorRequired = true;
+            res.status(202).json({
+                success: true,
+                message: 'Two-factor authentication required',
+                requiresCode: true,
+                sessionId: sessionId
+            });
             return new Promise((resolve) => {
                 twoFactorResolvers.set(sessionId, { resolve, helper });
             });
@@ -52,14 +58,7 @@ app.post('/api/login/', async (req, res) => {
 
         await helper.login({ userId, password });
 
-        if (twoFactorRequired) {
-            res.status(202).json({
-                success: true,
-                message: 'Two-factor authentication required',
-                requiresCode: true,
-                sessionId: sessionId
-            });
-        } else {
+        if (!res.headersSent) {
             res.status(200).json({ 
                 success: true,
                 message: 'Login successful'
@@ -87,14 +86,14 @@ app.post('/api/verify-2fa/', async (req, res) => {
             });
         }
 
-        const { resolve } = session;
+        const { resolve, helper } = session;
         resolve(code);
         twoFactorResolvers.delete(sessionId);
 
-        res.status(200).json({
-            success: true,
-            message: 'Two-factor authentication successful'
-        });
+        // res.status(200).json({
+        //     success: true,
+        //     message: 'Two-factor authentication successful'
+        // });
     } catch (error) {
         if (!res.headersSent) {
             res.status(401).json({
@@ -107,6 +106,16 @@ app.post('/api/verify-2fa/', async (req, res) => {
 
 app.get('/api/getBookingRecords/', async (req, res) => {
     try {
+        const sessionId = req.headers['session-id'];
+        const helper = helpers.get(sessionId);
+        
+        if (!helper) {
+            return res.status(401).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+
         const bookingRecord = await helper.getBookingRecords();
         res.status(200).json({
             success: true,
@@ -122,6 +131,16 @@ app.get('/api/getBookingRecords/', async (req, res) => {
 
 app.get('/api/getBankPayment/', async (req, res) => {
     try {
+        const sessionId = req.headers['session-id'];
+        const helper = helpers.get(sessionId);
+        
+        if (!helper) {
+            return res.status(401).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+
         const bankPayment = await helper.getBankPayment();
         res.status(200).json({
             success: true,
@@ -184,6 +203,16 @@ app.get('/api/getSportsRecords/', async (req, res) => {
 
 app.get('/api/getCardTransactions/', async (req, res) => {
     try {
+        const sessionId = req.headers['session-id'];
+        const helper = helpers.get(sessionId);
+        
+        if (!helper) {
+            return res.status(401).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+
         const cardTransactions = await helper.getCampusCardTransactions('2024-01-01', '2024-12-31', 1);
         res.status(200).json({
             success: true,

@@ -196,10 +196,15 @@ const Home = () => {
 
     const fetchStats = async () => {
         try {
-            const sportsResponse = fetch('/api/getSportsRecords/');
-            const bookingResponse = fetch('/api/getBookingRecord/');
-            const cardResponse = fetch('/api/getCardTransactions/');
-            const bankResponse = fetch('/api/getBankPayment/');
+            const sessionId = localStorage.getItem('sessionId');
+            const headers = { 'session-id': sessionId };
+
+            const [bookingResponse, bankResponse, sportsResponse, cardResponse] = await Promise.all([
+                fetch('/api/getBookingRecords/', { headers }),
+                fetch('/api/getBankPayment/', { headers }),
+                fetch('/api/getSportsRecords/', { headers }),
+                fetch('/api/getCardTransactions/', { headers })
+            ]);
 
             const responses = await Promise.all([
                 bookingResponse.json(),

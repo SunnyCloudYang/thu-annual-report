@@ -12,7 +12,8 @@ const LoginForm = (props) => {
         username: '',
         password: '',
         fingerprint: '',
-        twoFactorCode: ''
+        twoFactorCode: '',
+        twofaMethod: ''
     });
     const [sessionId, setSessionId] = useState('');
 
@@ -70,7 +71,7 @@ const LoginForm = (props) => {
                 .then(res => res.json())
                 .then(async (data) => {
                     // Redirect to dashboard or show content
-                    // document.body.style.overflow = 'auto';
+                    document.body.style.overflow = 'auto';
                     if (data.success) {
                         setStep('ready');
                     }
@@ -79,7 +80,7 @@ const LoginForm = (props) => {
             setIsLoading(false);
         } else {
             // Redirect to dashboard or show content
-            // document.body.style.overflow = 'auto';
+            document.body.style.overflow = 'auto';
             console.log('Ready to go');
             onLoginSuccess();
         }
@@ -134,6 +135,20 @@ const LoginForm = (props) => {
                                 required
                             />
                             <p className="forgot-it">忘记烦恼</p>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="twofaMethod">选择两步验证方式</label>
+                            <select
+                                name="twofaMethod"
+                                value={formData.twofaMethod}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="" disabled>请选择验证方式</option>
+                                <option value="mobile">手机</option>
+                                <option value="wechat">企业微信</option>
+                                <option value="totp">TOTP</option>
+                            </select>
                         </div>
                     </>
                 ) : step === '2fa' ? (
