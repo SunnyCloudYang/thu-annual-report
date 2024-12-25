@@ -27,10 +27,8 @@ app.post('/api/login/', async (req, res) => {
         const helper = new InfoHelper();
         helper.fingerprint = sessionId.replace(/-/g, '');
         helpers.set(sessionId, helper);
-        let twoFactorRequired = false;
 
         helper.twoFactorMethodHook = async (hasWeChatBool, phone, hasTotp) => {
-            twoFactorRequired = true;
             if (twoFactorMethod === 'mobile' && phone) {
                 return 'mobile';
             } else if (twoFactorMethod === 'wechat' && hasWeChatBool) {
@@ -90,10 +88,10 @@ app.post('/api/verify-2fa/', async (req, res) => {
         resolve(code);
         twoFactorResolvers.delete(sessionId);
 
-        // res.status(200).json({
-        //     success: true,
-        //     message: 'Two-factor authentication successful'
-        // });
+        res.status(200).json({
+            success: true,
+            message: 'Two-factor authentication successful'
+        });
     } catch (error) {
         if (!res.headersSent) {
             res.status(401).json({
