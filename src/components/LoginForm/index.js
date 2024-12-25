@@ -3,6 +3,7 @@ import { MdOutlineLogin } from "react-icons/md";
 import { FaEarthAsia, FaArrowUp } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
 import './styles.css';
+import { encrypt } from '../../utils/crypto';
 
 const LoginForm = (props) => {
     const { onLoginSuccess } = props;
@@ -29,16 +30,17 @@ const LoginForm = (props) => {
         if (step === 'credentials') {
             // Simulate API call to validate credentials
             setIsLoading(true);
+            const encryptedData = {
+                userId: encrypt(formData.username),
+                password: encrypt(formData.password),
+                twoFactorMethod: formData.twofaMethod
+            };
             await fetch('/api/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    userId: formData.username,
-                    password: formData.password,
-                    twoFactorMethod: 'mobile'
-                })
+                body: JSON.stringify(encryptedData)
             })
                 .then(res => res.json())
                 .then(async (data) => {

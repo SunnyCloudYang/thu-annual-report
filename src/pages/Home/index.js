@@ -220,6 +220,10 @@ const Home = () => {
                     sports: processSportsData(responses[2]),
                     card: processCardData(responses[3])
                 });
+            } else if (responses.some(res => res.message === 'Session not found')) {
+                setShowLogin(true);
+            } else if (responses.some(res => res.message === 'Two-factor authentication required')) {
+                setShowLogin(true);
             } else {
                 throw new Error('One or more responses indicated failure');
             }
