@@ -45,6 +45,7 @@ const LoginForm = (props) => {
                     if (data.requiresCode) {
                         setStep('2fa');
                         setSessionId(data.sessionId);
+                        localStorage.setItem('sessionId', data.sessionId);
                     } else {
                         // Redirect to dashboard or show content
                         // document.body.style.overflow = 'auto';
