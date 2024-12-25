@@ -14,7 +14,9 @@ const key = new NodeRSA(PRIVATE_KEY, {
 
 const decrypt = (ciphertext) => {
     try {
-        return key.decrypt(ciphertext, 'utf8');
+        // First decode base64 to get the actual encrypted data
+        const buffer = Buffer.from(ciphertext, 'base64');
+        return key.decrypt(buffer, 'utf8');
     } catch (error) {
         console.error('Decryption error:', error);
         throw new Error('Failed to decrypt credentials');
@@ -190,7 +192,7 @@ app.get('/api/getSportsRecords/', async (req, res) => {
             },
             {
                 name: "西体育馆",
-                field: "西体羽毛球场 (羽4)",
+                field: "西��羽毛球场 (羽4)",
                 time: "2021-10-07  7:00-8:00",
                 price: "40.0",
                 method: "",
