@@ -16,5 +16,6 @@ const encryptor = new JSEncrypt();
 encryptor.setPublicKey(PUBLIC_KEY);
 
 export const encrypt = (text) => {
+    // JSEncrypt uses PKCS#1 v1.5 padding by default
     return encryptor.encrypt(text);
 };

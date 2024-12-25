@@ -8,10 +8,17 @@ const NodeRSA = require('node-rsa');
 
 const PRIVATE_KEY = fs.readFileSync('/home/ubuntu/thu-annual-report/private_key.pem');
 
-const key = new NodeRSA(PRIVATE_KEY);
+const key = new NodeRSA(PRIVATE_KEY, {
+    encryptionScheme: 'pkcs1'
+});
 
 const decrypt = (ciphertext) => {
-    return key.decrypt(ciphertext, 'utf8');
+    try {
+        return key.decrypt(ciphertext, 'utf8');
+    } catch (error) {
+        console.error('Decryption error:', error);
+        throw new Error('Failed to decrypt credentials');
+    }
 };
 
 const app = express();
