@@ -115,12 +115,12 @@ app.get('/api/getBookingRecords/', async (req, res) => {
         }
 
         const bookingRecord = await helper.getBookingRecords();
-        res.status(200).json({
+        !res.headersSent && res.status(200).json({
             success: true,
             bookingRecord
         });
     } catch (error) {
-        res.status(401).json({
+        !res.headersSent && res.status(401).json({
             success: false,
             message: error.message || 'Failed to get booking record'
         });
@@ -140,12 +140,12 @@ app.get('/api/getBankPayment/', async (req, res) => {
         }
 
         const bankPayment = await helper.getBankPayment();
-        res.status(200).json({
+        !res.headersSent && res.status(200).json({
             success: true,
             bankPayment
         });
     } catch (error) {
-        res.status(401).json({
+        !res.headersSent && res.status(401).json({
             success: false,
             message: error.message || 'Failed to get bank payment'
         });
@@ -187,12 +187,12 @@ app.get('/api/getSportsRecords/', async (req, res) => {
                 payId: undefined,
             }
         ];
-        res.status(200).json({
+        !res.headersSent && res.status(200).json({
             success: true,
             sportsRecord
         });
     } catch (error) {
-        res.status(401).json({
+        !res.headersSent && res.status(401).json({
             success: false,
             message: error.message || 'Failed to get sports record'
         });
@@ -212,12 +212,12 @@ app.get('/api/getCardTransactions/', async (req, res) => {
         }
 
         const cardTransactions = await helper.getCampusCardTransactions('2024-01-01', '2024-12-31', 1);
-        res.status(200).json({
+        !res.headersSent && res.status(200).json({
             success: true,
             cardTransactions
         });
     } catch (error) {
-        res.status(401).json({
+        !res.headersSent && res.status(401).json({
             success: false,
             message: error.message || 'Failed to get card transactions'
         });
@@ -227,7 +227,7 @@ app.get('/api/getCardTransactions/', async (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({
+    !res.headersSent && res.status(500).json({
         success: false,
         message: 'Internal server error'
     });
