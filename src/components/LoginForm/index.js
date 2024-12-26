@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { MdOutlineLogin } from "react-icons/md";
 import { FaEarthAsia, FaArrowUp } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
-import './styles.css';
 import { encrypt } from '../../utils/crypto';
+import './styles.css';
 
 const LoginForm = (props) => {
-    const { onLoginSuccess } = props;
+    const { onLoginSuccess, isFetchingData } = props;
     const [step, setStep] = useState('credentials');
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -96,7 +96,7 @@ const LoginForm = (props) => {
         });
     };
 
-    if (isLoading) {
+    if (isLoading || isFetchingData) {
         return (
             <div className="loading-container">
                 <div className="loader"></div>

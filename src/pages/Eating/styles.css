@@ -1,0 +1,94 @@
+.eating-container {
+    height: calc(100vh - 20px - 20px);
+    padding: 20px;
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    display: grid;
+    grid-template-columns: repeat(2, calc(50% - 10px));
+    gap: 20px;
+}
+
+.summary-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    overflow-y: auto;
+}
+
+.charts-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+.charts-container {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    text-align: center;
+}
+
+.charts-container > * {
+    margin: 0px 20px;
+}
+
+.charts-container.pie canvas {
+    margin: 0 auto;
+}
+
+.highlight-text {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.summary-section .subsection {
+    margin-top: 60px;
+}
+
+.summary-section .subsection:nth-child(even) {
+    text-align: left;
+}
+
+.summary-section .subsection:nth-child(odd) {
+    text-align: right;
+}
+
+.summary-section .subsection:nth-child(1) {
+    margin-top: 0;
+    text-align: center;
+}
+
+.summary-section p {
+    margin: 10px 0;
+    line-height: 1.6;
+    font-size: 1.2rem;
+}
+
+.large {
+    font-size: 1.6em;
+    font-weight: bold;
+    margin: 0 0.2em;
+}
+
+@media (max-width: 768px) {
+    .eating-container {
+        grid-template-columns: 100%;
+        grid-template-rows: repeat(2, calc(50% - 10px));
+    }
+    .summary-section p {
+        font-size: 1rem;
+        margin: 10px 0;
+        line-height: 1.2;
+    }
+    .large {
+        font-size: 1.4em;
+    }
+    .summary-section .subsection {
+        margin-top: 30px;
+    }
+}
+
