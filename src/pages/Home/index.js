@@ -24,7 +24,7 @@ const processCardData = (data) => {
 };
 
 const Home = ({ setData }) => {
-    const [showPrivacy, setShowPrivacy] = useState(false);
+    const [showPrivacy, setShowPrivacy] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isFetchingData, setIsFetchingData] = useState(false);
 
@@ -33,7 +33,7 @@ const Home = ({ setData }) => {
     };
 
     const handleExit = () => {
-        setShowPrivacy(false);
+        window.close();
     };
 
     const fetchStats = useCallback(async () => {
@@ -41,11 +41,14 @@ const Home = ({ setData }) => {
             const sessionId = localStorage.getItem('sessionId');
             const headers = { 'session-id': sessionId };
 
+            const bookingResponse = await fetch('/api/getBookingRecords/', { headers });
             const [bankResponse, cardResponse] = await Promise.all([
                 fetch('/api/getBankPayment/', { headers }),
                 fetch('/api/getCardTransactions/', { headers })
             ]);
 
+            const bookingData = await bookingResponse.json();
+            console.log(bookingData);
             const responses = await Promise.all([
                 bankResponse.json(),
                 cardResponse.json()
@@ -55,7 +58,8 @@ const Home = ({ setData }) => {
                 setData({
                     bank: processBankData(responses[0]),
                     eating: processCardData(responses[1]).eatingTransactions,
-                    shower: processCardData(responses[1]).showerTransactions
+                    shower: processCardData(responses[1]).showerTransactions,
+                    booking: bookingData.bookingRecord
                 });
             } else if (responses.some(res => res.message === 'Session not found')) {
                 setIsLoggedIn(false);
