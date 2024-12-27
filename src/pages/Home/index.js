@@ -25,13 +25,11 @@ const processCardData = (data) => {
 
 const Home = ({ setData }) => {
     const [showPrivacy, setShowPrivacy] = useState(false);
-    const [showLogin, setShowLogin] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isFetchingData, setIsFetchingData] = useState(false);
 
     const handleAccept = () => {
         setShowPrivacy(false);
-        setShowLogin(true);
     };
 
     const handleExit = () => {
@@ -60,9 +58,9 @@ const Home = ({ setData }) => {
                     shower: processCardData(responses[1]).showerTransactions
                 });
             } else if (responses.some(res => res.message === 'Session not found')) {
-                setShowLogin(true);
+                setIsLoggedIn(false);
             } else if (responses.some(res => res.message === 'Two-factor authentication required')) {
-                setShowLogin(true);
+                setIsLoggedIn(false);
             } else {
                 throw new Error('One or more responses indicated failure');
             }
@@ -80,24 +78,19 @@ const Home = ({ setData }) => {
 
     if (showPrivacy) {
         return <Privacy onAccept={handleAccept} onExit={handleExit} />;
-    }
-
-    if (showLogin) {
+    } else {
         return (
             <div className='home-background'>
                 <div className='home-container'>
                     <LoginForm
                         onLoginSuccess={() => {
                             setIsLoggedIn(true);
-                            setShowLogin(false);
                         }}
                         isFetchingData={isFetchingData} />
                 </div>
             </div>
         );
     }
-
-    return null;
 };
 
 export default Home;

@@ -77,6 +77,7 @@ const LoginForm = (props) => {
                     document.body.style.overflow = 'auto';
                     if (data.success) {
                         setStep('ready');
+                        onLoginSuccess();
                     }
                 })
                 .catch(err => console.error(err));
@@ -85,7 +86,6 @@ const LoginForm = (props) => {
             // Redirect to dashboard or show content
             document.body.style.overflow = 'auto';
             console.log('Ready to go');
-            onLoginSuccess();
         }
     };
 
@@ -173,7 +173,7 @@ const LoginForm = (props) => {
                     <div className="ready-container">
                         <h2>让我们一起出发吧!</h2>
                         <div className="slide-hint">
-                            <div className="slide-arrow" onClick={onLoginSuccess}>
+                            <div className="slide-arrow">
                                 <FaArrowUp />
                             </div>
                             <p>上滑开启旅程</p>
