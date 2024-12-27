@@ -27,6 +27,44 @@ const Home = ({ setData }) => {
     const [showPrivacy, setShowPrivacy] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isFetchingData, setIsFetchingData] = useState(false);
+    const [fetchingProgress, setFetchingProgress] = useState([0, 0, 0]);
+    const [completedSections, setCompletedSections] = useState([false, false, false]);
+
+    useEffect(() => {
+        // Estimated time for each operation in seconds
+        const estimatedTime = [3, 1, 8];  // login, booking, card+bank
+        const finalProportions = [25, 25, 50];  // Final percentages for each section
+
+        if (isFetchingData) {
+            const totalTime = estimatedTime.reduce((a, b) => a + b, 0);
+            const progressPerSecond = 90 / totalTime;
+
+            let elapsed = 0;
+            const interval = setInterval(() => {
+                elapsed += 0.1;  // Update every 100ms
+                
+                // Calculate progress for each section
+                const newProgress = estimatedTime.map((time, index) => {
+                    // If section is completed, return its final proportion
+                    if (completedSections[index]) {
+                        return finalProportions[index];
+                    }
+
+                    const sectionStart = estimatedTime.slice(0, index).reduce((a, b) => a + b, 0);
+                    const sectionProgress = Math.max(0, Math.min(
+                        finalProportions[index] * 0.9,  // 90% of final proportion
+                        (elapsed - sectionStart) * progressPerSecond * 10 * 
+                        (finalProportions[index] / (time * progressPerSecond))
+                    ));
+                    return sectionProgress;
+                });
+                
+                setFetchingProgress(newProgress);
+            }, 100);
+
+            return () => clearInterval(interval);
+        }
+    }, [isFetchingData, completedSections]);
 
     const handleAccept = () => {
         setShowPrivacy(false);
@@ -41,30 +79,37 @@ const Home = ({ setData }) => {
             const sessionId = localStorage.getItem('sessionId');
             const headers = { 'session-id': sessionId };
 
-            const bookingResponse = await fetch('/api/getBookingRecords/', { headers });
-            const [bankResponse, cardResponse] = await Promise.all([
-                fetch('/api/getBankPayment/', { headers }),
+            const [bookingResponse, cardResponse, bankResponse] = await Promise.all([
+                fetch('/api/getBookingRecords/', { headers })
+                    .then(res => {
+                        setCompletedSections(prev => [true, prev[1], prev[2]]);
+                        return res;
+                    }),
                 fetch('/api/getCardTransactions/', { headers })
+                    .then(res => {
+                        setCompletedSections(prev => [prev[0], true, prev[2]]);
+                        return res;
+                    }),
+                fetch('/api/getBankPayment/', { headers })
+                    .then(res => {
+                        setCompletedSections(prev => [prev[0], prev[1], true]);
+                        return res;
+                    })
             ]);
 
-            const bookingData = await bookingResponse.json();
-            console.log(bookingData);
             const responses = await Promise.all([
-                bankResponse.json(),
-                cardResponse.json()
+                bookingResponse.json(),
+                cardResponse.json(),
+                bankResponse.json()
             ]);
 
             if (responses.every(res => res.success)) {
                 setData({
-                    bank: processBankData(responses[0]),
+                    booking: responses[0].bookingRecord,
                     eating: processCardData(responses[1]).eatingTransactions,
                     shower: processCardData(responses[1]).showerTransactions,
-                    booking: bookingData.bookingRecord
+                    bank: processBankData(responses[2])
                 });
-            } else if (responses.some(res => res.message === 'Session not found')) {
-                setIsLoggedIn(false);
-            } else if (responses.some(res => res.message === 'Two-factor authentication required')) {
-                setIsLoggedIn(false);
             } else {
                 throw new Error('One or more responses indicated failure');
             }
@@ -76,7 +121,10 @@ const Home = ({ setData }) => {
     useEffect(() => {
         if (isLoggedIn) {
             setIsFetchingData(true);
-            fetchStats().finally(() => setIsFetchingData(false));
+            setCompletedSections([false, false, false]);
+            fetchStats().finally(() => {
+                setIsFetchingData(false);
+            });
         }
     }, [isLoggedIn, fetchStats]);
 
@@ -90,7 +138,9 @@ const Home = ({ setData }) => {
                         onLoginSuccess={() => {
                             setIsLoggedIn(true);
                         }}
-                        isFetchingData={isFetchingData} />
+                        isFetchingData={isFetchingData}
+                        fetchingProgress={fetchingProgress}
+                    />
                 </div>
             </div>
         );

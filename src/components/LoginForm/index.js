@@ -3,10 +3,11 @@ import { MdOutlineLogin } from "react-icons/md";
 import { FaEarthAsia, FaArrowUp } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
 import { encrypt } from '../../utils/crypto';
+import ProgressBar from 'react-bootstrap/ProgressBar';
 import './styles.css';
 
 const LoginForm = (props) => {
-    const { onLoginSuccess, isFetchingData } = props;
+    const { onLoginSuccess, isFetchingData, fetchingProgress } = props;
     const [step, setStep] = useState('credentials');
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -96,11 +97,24 @@ const LoginForm = (props) => {
         });
     };
 
-    if (isLoading || isFetchingData) {
+    if (isLoading) {
         return (
             <div className="loading-container">
                 <div className="loader"></div>
                 <p>Please wait...</p>
+            </div>
+        );
+    }
+
+    if (isFetchingData) {
+        return (
+            <div className="loading-container">
+                <p>时光机正在倒带，马上就好！</p>
+                <ProgressBar>
+                    <ProgressBar animated variant='info' now={fetchingProgress[0]} key={1} />
+                    <ProgressBar animated variant='warning' now={fetchingProgress[1]} key={2} />
+                    <ProgressBar animated variant='success' now={fetchingProgress[2]} key={3} />
+                </ProgressBar>
             </div>
         );
     }
