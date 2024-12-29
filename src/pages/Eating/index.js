@@ -234,12 +234,13 @@ const Eating = ({ data }) => {
         <div className="eating-container">
             <div className="summary-section">
                 <div className='subsection'>
+                    <p><span className='large'>2024年，</span></p>
                     <p className="highlight-text">
-                        今年你在华清大学的食堂一共消费了<span className='large'>¥{processedData.totalSpent}</span>
+                        你在华清大学的食堂一共消费了<span className='large'>¥{processedData.totalSpent}</span>元
                     </p>
                 </div>
                 <div className='subsection'>
-                    <p>你一共到访了<span className='large'>{Object.keys(processedData.addressCount).length}</span>个食堂</p>
+                    <p>你一共到访了<span className='large'>{Object.keys(processedData.addressCount).length}</span>个食堂的<span className='large'>{Object.keys(processedData.windowCount).length}</span>个窗口</p>
                     <p>但是你一定对<span className='large'>{processedData.mostFrequentAddress}</span>情有独钟吧，居然去了足足<span className='large'>{processedData.addressCount[processedData.mostFrequentAddress]}</span>次</p>
                 </div>
                 <div className='subsection'>

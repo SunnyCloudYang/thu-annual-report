@@ -1,5 +1,5 @@
 .eating-container {
-    height: calc(100vh - 20px - 20px);
+    height: 100vh;
     padding: 20px;
     background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
     color: white;
@@ -9,6 +9,10 @@
 }
 
 .summary-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
     background: rgba(255, 255, 255, 0.1);
     padding: 20px;
     border-radius: 15px;
@@ -46,7 +50,10 @@
 }
 
 .summary-section .subsection {
-    margin-top: 60px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .summary-section .subsection:nth-child(even) {
@@ -63,9 +70,8 @@
 }
 
 .summary-section p {
-    margin: 10px 0;
-    line-height: 1.6;
     font-size: 1.2rem;
+    line-height: 1.4;
 }
 
 .large {
@@ -81,14 +87,10 @@
     }
     .summary-section p {
         font-size: 1rem;
-        margin: 10px 0;
-        line-height: 1.2;
+        margin: 2px 0;
     }
     .large {
         font-size: 1.4em;
-    }
-    .summary-section .subsection {
-        margin-top: 30px;
     }
 }
 
