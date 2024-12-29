@@ -4,6 +4,8 @@ import { FaEarthAsia, FaArrowUp } from "react-icons/fa6";
 import { GiRotaryPhone } from "react-icons/gi";
 import { encrypt } from '../../utils/crypto';
 import ProgressBar from 'react-bootstrap/ProgressBar';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 
 const LoginForm = (props) => {

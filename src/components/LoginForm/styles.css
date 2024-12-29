@@ -133,7 +133,7 @@ input:focus {
 .loading-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 1rem;
 }
 
