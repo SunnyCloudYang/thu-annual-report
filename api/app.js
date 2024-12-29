@@ -1,9 +1,10 @@
 const express = require('express');
 const path = require('path');
 const { InfoHelper } = require('@thu-info/lib');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const https = require('https');
 const fs = require('fs');
+const os = require('os');
 const NodeRSA = require('node-rsa');
 
 const PRIVATE_KEY = fs.readFileSync('/home/ubuntu/thu-annual-report/private_key.pem');
@@ -11,6 +12,8 @@ const PRIVATE_KEY = fs.readFileSync('/home/ubuntu/thu-annual-report/private_key.
 const key = new NodeRSA(PRIVATE_KEY, {
     encryptionScheme: 'pkcs1'
 });
+
+const SESSION_TIMEOUT = 1000 * 60 * 30;  // 30 minutes
 
 const decrypt = (ciphertext) => {
     try {
@@ -40,48 +43,61 @@ app.get('/api/', (req, res) => {
 });
 
 app.post('/api/login/', async (req, res) => {
+    const { userId: encryptedUserId, password: encryptedPassword, twoFactorMethod } = req.body;
+
+    // Decrypt credentials using private key
+    const userId = decrypt(encryptedUserId);
+    const password = decrypt(encryptedPassword);
+
+    // Remove helper from map if login fails
+    for (const [key, value] of helpers) {
+        if (userId === value.userId) {
+            helpers.delete(key);
+            break;
+        }
+    }
+
+    const sessionId = crypto.createHash('sha256')
+        .update(userId + Math.floor(new Date().getTime() / SESSION_TIMEOUT))
+        .digest('hex');
+    const helper = new InfoHelper();
+    helper.fingerprint = crypto.createHash('sha256')
+        .update(process.platform + process.arch + os.hostname() + process.env.USER)
+        .digest('hex');
+    helpers.set(sessionId, helper);
+    setTimeout(() => helpers.delete(sessionId), SESSION_TIMEOUT);  // Remove helper after 1 hour
+
+    helper.twoFactorMethodHook = async (hasWeChatBool, phone, hasTotp) => {
+        if (twoFactorMethod === 'mobile' && phone) {
+            return 'mobile';
+        } else if (twoFactorMethod === 'wechat' && hasWeChatBool) {
+            return 'wechat';
+        } else if (twoFactorMethod === 'totp' && hasTotp) {
+            return 'totp';
+        } else {
+            return phone ? 'mobile' : hasWeChatBool ? 'wechat' : 'totp';
+        }
+    };
+
+    helper.twoFactorAuthHook = async () => {
+        !res.headersSent && res.status(202).json({
+            success: true,
+            message: 'Two-factor authentication required',
+            requiresCode: true,
+            sessionId: sessionId
+        });
+        return new Promise((resolve) => {
+            twoFactorResolvers.set(sessionId, { resolve, helper });
+        });
+    };
+
+    helper.trustFingerprintHook = async () => true;
+
     try {
-        const { userId: encryptedUserId, password: encryptedPassword, twoFactorMethod } = req.body;
-        
-        // Decrypt credentials using private key
-        const userId = decrypt(encryptedUserId);
-        const password = decrypt(encryptedPassword);
-        
-        const sessionId = uuidv4();
-        const helper = new InfoHelper();
-        helper.fingerprint = sessionId.replace(/-/g, '');
-        helpers.set(sessionId, helper);
-
-        helper.twoFactorMethodHook = async (hasWeChatBool, phone, hasTotp) => {
-            if (twoFactorMethod === 'mobile' && phone) {
-                return 'mobile';
-            } else if (twoFactorMethod === 'wechat' && hasWeChatBool) {
-                return 'wechat';
-            } else if (twoFactorMethod === 'totp' && hasTotp) {
-                return 'totp';
-            } else {
-                return phone ? 'mobile' : hasWeChatBool ? 'wechat' : 'totp';
-            }
-        };
-
-        helper.twoFactorAuthHook = async () => {
-            !res.headersSent && res.status(202).json({
-                success: true,
-                message: 'Two-factor authentication required',
-                requiresCode: true,
-                sessionId: sessionId
-            });
-            return new Promise((resolve) => {
-                twoFactorResolvers.set(sessionId, { resolve, helper });
-            });
-        };
-
-        helper.trustFingerprintHook = async () => true;
-
         await helper.login({ userId, password });
 
         if (!res.headersSent) {
-            res.status(200).json({ 
+            res.status(200).json({
                 success: true,
                 message: 'Login successful'
             });
@@ -92,6 +108,7 @@ app.post('/api/login/', async (req, res) => {
                 success: false,
                 message: error.message || 'Login failed'
             });
+            helpers.delete(sessionId);
         }
     }
 });
@@ -100,7 +117,7 @@ app.post('/api/verify-2fa/', async (req, res) => {
     try {
         const { code, sessionId } = req.body;
         const session = twoFactorResolvers.get(sessionId);
-        
+
         if (!session) {
             return res.status(404).json({
                 success: false,
@@ -130,7 +147,7 @@ app.get('/api/getBookingRecords/', async (req, res) => {
     try {
         const sessionId = req.headers['session-id'];
         const helper = helpers.get(sessionId);
-        
+
         if (!helper) {
             return res.status(401).json({
                 success: false,
@@ -155,7 +172,7 @@ app.get('/api/getBankPayment/', async (req, res) => {
     try {
         const sessionId = req.headers['session-id'];
         const helper = helpers.get(sessionId);
-        
+
         if (!helper) {
             return res.status(401).json({
                 success: false,
@@ -227,7 +244,7 @@ app.get('/api/getCardTransactions/', async (req, res) => {
     try {
         const sessionId = req.headers['session-id'];
         const helper = helpers.get(sessionId);
-        
+
         if (!helper) {
             return res.status(401).json({
                 success: false,
