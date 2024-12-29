@@ -51,10 +51,13 @@ const LoginForm = (props) => {
                         setStep('2fa');
                         setSessionId(data.sessionId);
                         localStorage.setItem('sessionId', data.sessionId);
+                    } else if (data.success) {
+                        setStep('ready');
+                        setSessionId(data.sessionId);
+                        localStorage.setItem('sessionId', data.sessionId);
+                        onLoginSuccess();
                     } else {
-                        // Redirect to dashboard or show content
-                        // document.body.style.overflow = 'auto';
-                        console.log(data);
+                        console.error('Login failed:', data.message);
                     }
                 })
                 .catch(err => {

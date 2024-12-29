@@ -99,7 +99,8 @@ app.post('/api/login/', async (req, res) => {
         if (!res.headersSent) {
             res.status(200).json({
                 success: true,
-                message: 'Login successful'
+                message: 'Login successful',
+                sessionId: sessionId
             });
         }
     } catch (error) {
